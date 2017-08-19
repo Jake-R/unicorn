@@ -279,6 +279,17 @@ class Uc(object):
         self._ctype_cbs = {}
         self._callback_count = 0
         self._cleanup.register(self)
+        self.mem = Memory(self)
+        from . import Hook
+        self.hook = Hook.Hooks_instance(self)
+        for hook in Hook._hook_list:
+            self.hook_add(*hook[0], **hook[1])
+
+    def __getitem__(self, key):
+        return self.mem[key]
+
+    def __setitem__(self, key, value):
+        self.mem[key] = value
 
     @staticmethod
     def release_handle(uch):
@@ -609,6 +620,80 @@ class SavedContext(object):
         if status != uc.UC_ERR_OK:
             raise UcError(status)
 
+class Registers(object):
+    def __init__(self):
+        pass
+
+class Register(object):
+    def __init__(self, value):
+        self.value = value
+
+    def __get__(self, instance, owner):
+        return instance.mu.reg_read(self.value)
+
+    def __set__(self, instance, value):
+        instance.mu.reg_write(self.value, value)
+
+class Memory(object):
+    def __init__(self, mu):
+        self.mu = mu
+        self.ref_dict = {}
+
+    def __getitem__(self, key):
+        if isinstance(key, slice):
+            if key.step:
+                raise IndexError("Memory object does not support stepping")
+            if key.start < 0 or key.stop < 0:
+                raise IndexError("Memory object does not support negative indexing")
+            return self.mu.mem_read(key.start, key.stop - key.start)
+        elif isinstance(key, int):
+            return self.mu.mem_read(key, 1)
+        elif isinstance(key, str):
+            range_ = self.ref_dict.get(key, None)
+            if range_:
+                return self[range_[0]:range_[1]]
+            raise KeyError
+
+    def __setitem__(self, key, value):
+        if isinstance(key, str):
+            if len(value) != 2:
+                raise ValueError
+            self.ref_dict[key] = value
+        elif isinstance(key, int):
+            if isinstance(value, int):
+                self.mu.mem_map(key, value)
+            else:
+                self.mu.mem_write(key, value)
+
+class HookAttr(object):
+    def __init__(self, mu, value):
+        self.mu = mu
+        self.value = value
+
+    def __call__(self, *args, **kwargs):
+        self.mu.hook_add(self.value, *args, **kwargs)
+
+class HookDecorator(object):
+    def __init__(self, hook_list, value):
+        self.hook_list = hook_list
+        self.value = value
+
+    def __call__(self, *args, **kwargs):
+        if len(args) == 1 and callable(args[0]):
+            self._hookify(args[0])
+            return args[0]
+
+        def wrap(f):
+            return self._hookify(f, *args, **kwargs)
+
+        return wrap
+
+    def _hookify(self, func, *args, **kwargs):
+        args2 = tuple([self.value, func] + list(args))
+        self.hook_list.append((args2, kwargs))
+        return func
+
+
 # print out debugging info
 def debug():
     archs = {
@@ -631,3 +716,10 @@ def debug():
     return "python-%s-c%u.%u-b%u.%u" % (
         all_archs, major, minor, uc.UC_API_MAJOR, uc.UC_API_MINOR
     )
+
+#from x86 import *
+#from arm import *
+#from arm64 import *
+#from m68k import *
+#from mips import *
+#from sparc import *
