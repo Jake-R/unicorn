@@ -16,7 +16,6 @@ from . import arm64_const
 class Base(unicorn.Uc):
     def __init__(self, mode=None):
         super().__init__(unicorn_const.UC_ARCH_ARM64, mode)
-        self.reg = Reg_arm64(self)
 
 
 class arm64el_arm(Base):
@@ -48,7 +47,10 @@ class arm64eb_mclass(Base):
     def __init__(self):
         super().__init__(unicorn_const.UC_MODE_BIG_ENDIAN|unicorn_const.UC_MODE_MCLASS)
 
-class Reg_arm64(unicorn.Registers):
+class Reg(unicorn.Registers):
+    def __init__(self, mu):
+        super().__init__()
+        self.mu = mu
 
     b0 = unicorn.Register(arm64_const.UC_ARM64_REG_B0)
     b1 = unicorn.Register(arm64_const.UC_ARM64_REG_B1)
@@ -321,5 +323,3 @@ class Reg_arm64(unicorn.Registers):
     x9 = unicorn.Register(arm64_const.UC_ARM64_REG_X9)
     xzr = unicorn.Register(arm64_const.UC_ARM64_REG_XZR)
 
-    def __init__(self, mu):
-        self.mu = mu

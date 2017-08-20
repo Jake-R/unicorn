@@ -16,7 +16,6 @@ from . import mips_const
 class Base(unicorn.Uc):
     def __init__(self, mode=None):
         super().__init__(unicorn_const.UC_ARCH_MIPS, mode)
-        self.reg = Reg_mips(self)
 
 
 class mipsel_32(Base):
@@ -38,7 +37,10 @@ class mipseb_64(Base):
     def __init__(self):
         super().__init__(unicorn_const.UC_MODE_BIG_ENDIAN|unicorn_const.UC_MODE_64)
 
-class Reg_mips(unicorn.Registers):
+class Reg(unicorn.Registers):
+    def __init__(self, mu):
+        super().__init__()
+        self.mu = mu
 
     _0 = unicorn.Register(mips_const.UC_MIPS_REG_0)
     _1 = unicorn.Register(mips_const.UC_MIPS_REG_1)
@@ -220,5 +222,3 @@ class Reg_mips(unicorn.Registers):
     w9 = unicorn.Register(mips_const.UC_MIPS_REG_W9)
     zero = unicorn.Register(mips_const.UC_MIPS_REG_ZERO)
 
-    def __init__(self, mu):
-        self.mu = mu

@@ -16,7 +16,6 @@ from . import arm_const
 class Base(unicorn.Uc):
     def __init__(self, mode=None):
         super().__init__(unicorn_const.UC_ARCH_ARM, mode)
-        self.reg = Reg_arm(self)
 
 
 class armel_arm(Base):
@@ -48,7 +47,10 @@ class armeb_mclass(Base):
     def __init__(self):
         super().__init__(unicorn_const.UC_MODE_BIG_ENDIAN|unicorn_const.UC_MODE_MCLASS)
 
-class Reg_arm(unicorn.Registers):
+class Reg(unicorn.Registers):
+    def __init__(self, mu):
+        super().__init__()
+        self.mu = mu
 
     apsr = unicorn.Register(arm_const.UC_ARM_REG_APSR)
     apsr_nzcv = unicorn.Register(arm_const.UC_ARM_REG_APSR_NZCV)
@@ -173,5 +175,3 @@ class Reg_arm(unicorn.Registers):
     sp = unicorn.Register(arm_const.UC_ARM_REG_SP)
     spsr = unicorn.Register(arm_const.UC_ARM_REG_SPSR)
 
-    def __init__(self, mu):
-        self.mu = mu

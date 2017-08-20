@@ -8,6 +8,7 @@ import inspect
 import os.path
 import sys
 import weakref
+import importlib
 
 from . import x86_const, arm64_const, unicorn_const as uc
 
@@ -284,6 +285,8 @@ class Uc(object):
         self.hook = Hook.Hooks_instance(self)
         for hook in Hook._hook_list:
             self.hook_add(*hook[0], **hook[1])
+        arch = module_from_arch_const(arch)
+        self.reg = arch.Reg(self)
 
     def __getitem__(self, key):
         return self.mem[key]
@@ -619,6 +622,13 @@ class SavedContext(object):
         status = _uc.uc_free(self.pointer)
         if status != uc.UC_ERR_OK:
             raise UcError(status)
+
+def module_from_arch_const(arch):
+    arches = [x for x in dir(uc) if x.startswith('UC_ARCH_')]
+    arches = [(x.split('_', 2)[-1].lower(), getattr(uc, x)) for x in arches]
+    arches = [x for x in arches if x[1]==arch]
+    assert len(arches) == 1
+    return importlib.import_module('.' + arches[0][0], 'unicorn')
 
 class Registers(object):
     def __init__(self):

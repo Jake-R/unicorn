@@ -16,7 +16,6 @@ from . import sparc_const
 class Base(unicorn.Uc):
     def __init__(self, mode=None):
         super().__init__(unicorn_const.UC_ARCH_SPARC, mode)
-        self.reg = Reg_sparc(self)
 
 
 class sparc_32(Base):
@@ -28,7 +27,10 @@ class sparc_64(Base):
     def __init__(self):
         super().__init__(unicorn_const.UC_MODE_64)
 
-class Reg_sparc(unicorn.Registers):
+class Reg(unicorn.Registers):
+    def __init__(self, mu):
+        super().__init__()
+        self.mu = mu
 
     ending = unicorn.Register(sparc_const.UC_SPARC_REG_ENDING)
     f0 = unicorn.Register(sparc_const.UC_SPARC_REG_F0)
@@ -123,5 +125,3 @@ class Reg_sparc(unicorn.Registers):
     xcc = unicorn.Register(sparc_const.UC_SPARC_REG_XCC)
     y = unicorn.Register(sparc_const.UC_SPARC_REG_Y)
 
-    def __init__(self, mu):
-        self.mu = mu

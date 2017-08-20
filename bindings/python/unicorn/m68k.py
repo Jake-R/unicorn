@@ -16,14 +16,16 @@ from . import m68k_const
 class Base(unicorn.Uc):
     def __init__(self, mode=None):
         super().__init__(unicorn_const.UC_ARCH_M68K, mode)
-        self.reg = Reg_m68k(self)
 
 
 class m68k(Base):
     def __init__(self):
         super().__init__(unicorn_const.UC_MODE_BIG_ENDIAN)
 
-class Reg_m68k(unicorn.Registers):
+class Reg(unicorn.Registers):
+    def __init__(self, mu):
+        super().__init__()
+        self.mu = mu
 
     a0 = unicorn.Register(m68k_const.UC_M68K_REG_A0)
     a1 = unicorn.Register(m68k_const.UC_M68K_REG_A1)
@@ -46,5 +48,3 @@ class Reg_m68k(unicorn.Registers):
     pc = unicorn.Register(m68k_const.UC_M68K_REG_PC)
     sr = unicorn.Register(m68k_const.UC_M68K_REG_SR)
 
-    def __init__(self, mu):
-        self.mu = mu

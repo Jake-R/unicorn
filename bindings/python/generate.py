@@ -36,19 +36,20 @@ from . import {{ const_name }}
 class Base(unicorn.Uc):
     def __init__(self, mode=None):
         super().__init__(unicorn_const.{{ arch_const }}, mode)
-        self.reg = Reg_{{ arch_name }}(self)
 {% for mode in modes %}
 
 class {{ arch_name }}{{ mode[0] }}(Base):
     def __init__(self):
         super().__init__({{ mode[1] }})
 {% endfor %}
-class Reg_{{ arch_name }}(unicorn.Registers):
+class Reg(unicorn.Registers):
+    def __init__(self, mu):
+        super().__init__()
+        self.mu = mu
 {% for reg in regs %}
     {{ reg[0] }} = unicorn.Register({{ const_name }}.{{ reg[1] }}){% endfor %}
 
-    def __init__(self, mu):
-        self.mu = mu
+
 """)
 
 hook_template = Template(

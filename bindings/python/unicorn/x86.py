@@ -16,7 +16,6 @@ from . import x86_const
 class Base(unicorn.Uc):
     def __init__(self, mode=None):
         super().__init__(unicorn_const.UC_ARCH_X86, mode)
-        self.reg = Reg_x86(self)
 
 
 class x86_16(Base):
@@ -33,7 +32,10 @@ class x86_64(Base):
     def __init__(self):
         super().__init__(unicorn_const.UC_MODE_64)
 
-class Reg_x86(unicorn.Registers):
+class Reg(unicorn.Registers):
+    def __init__(self, mu):
+        super().__init__()
+        self.mu = mu
 
     ah = unicorn.Register(x86_const.UC_X86_REG_AH)
     al = unicorn.Register(x86_const.UC_X86_REG_AL)
@@ -286,5 +288,3 @@ class Reg_x86(unicorn.Registers):
     zmm8 = unicorn.Register(x86_const.UC_X86_REG_ZMM8)
     zmm9 = unicorn.Register(x86_const.UC_X86_REG_ZMM9)
 
-    def __init__(self, mu):
-        self.mu = mu
