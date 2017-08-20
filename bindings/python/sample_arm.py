@@ -72,34 +72,19 @@ def test_thumb():
 
         # map 2MB memory for this emulation
         mu.mem_map(ADDRESS, 2 * 1024 * 1024)
+        for i in range(1000):
+            # write machine code to be emulated to memory
+            mu.mem_write(ADDRESS, THUMB_CODE)
 
-        # write machine code to be emulated to memory
-        mu.mem_write(ADDRESS, THUMB_CODE)
+            # initialize machine registers
+            mu.reg_write(UC_ARM_REG_SP, 0x1234)
 
-        # initialize machine registers
-        mu.reg_write(UC_ARM_REG_SP, 0x1234)
-
-        # tracing all basic blocks with customized callback
-        mu.hook_add(UC_HOOK_BLOCK, hook_block)
-
-        # tracing all instructions with customized callback
-        mu.hook_add(UC_HOOK_CODE, hook_code)
-
-        # emulate machine code in infinite time
-        # Note we start at ADDRESS | 1 to indicate THUMB mode.
-        mu.emu_start(ADDRESS | 1, ADDRESS + len(THUMB_CODE))
-
-        # now print out some registers
-        print(">>> Emulation done. Below is the CPU context")
-
-        sp = mu.reg_read(UC_ARM_REG_SP)
-        print(">>> SP = 0x%x" %sp)
+            sp = mu.reg_read(UC_ARM_REG_SP)
 
     except UcError as e:
         print("ERROR: %s" % e)
 
 
 if __name__ == '__main__':
-    test_arm()
     print("=" * 26)
     test_thumb()

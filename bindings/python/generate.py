@@ -19,6 +19,15 @@ arches = [(('arm', 'UC_ARCH_ARM'), endianness, arm_modes),
 
 register_template = Template(
 """
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+
+from builtins import super
+from future import standard_library
+standard_library.install_aliases()
+
 from . import unicorn
 from . import unicorn_const
 from . import {{ const_name }}
@@ -44,6 +53,15 @@ class Reg_{{ arch_name }}(unicorn.Registers):
 
 hook_template = Template(
 """
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+
+from builtins import super
+from future import standard_library
+standard_library.install_aliases()
+
 from . import unicorn
 from . import unicorn_const
 
