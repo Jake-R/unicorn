@@ -283,10 +283,8 @@ class Uc(object):
         self.mem = Memory(self)
         from . import Hook
         self.hook = Hook.Hooks_instance(self)
-        for hook in Hook._hook_list:
-            self.hook_add(*hook[0], **hook[1])
         arch = module_from_arch_const(arch)
-        self.reg = arch.Reg(self)
+        self.regs = arch.Reg(self)
 
     def __getitem__(self, key):
         return self.mem[key]
@@ -577,6 +575,9 @@ class Uc(object):
             raise UcError(status)
         h = 0
 
+    def unhook(self, h):
+        return self.hook_del(h)
+
     def context_save(self):
         ptr = ctypes.cast(0, ctypes.c_voidp)
         status = _uc.uc_context_alloc(self._uch, ctypes.byref(ptr))
@@ -630,6 +631,7 @@ def module_from_arch_const(arch):
     assert len(arches) == 1
     return importlib.import_module('.' + arches[0][0], 'unicorn')
 
+
 class Registers(object):
     def __init__(self):
         pass
@@ -648,7 +650,22 @@ class Memory(object):
     def __init__(self, mu):
         self.mu = mu
         self.ref_dict = {}
-
+    
+    def map(self, *args, **kwargs):
+        return self.mu.mem_map(*args, **kwargs)
+   
+    def map_ptr(self, *args, **kwargs):
+        return self.mu.mem_map_ptr(*args, **kwargs)
+   
+    def protect(self, *args, **kwargs):
+        return self.mu.mem_protect(*args, **kwargs)
+   
+    def regions(self, *args, **kwargs):
+        return self.mu.mem_regions(*args, **kwargs)
+   
+    def unmap(self, *args, **kwargs):
+        return self.mu.mem_unmap(*args, **kwargs)
+   
     def __getitem__(self, key):
         if isinstance(key, slice):
             if key.step:
@@ -670,10 +687,8 @@ class Memory(object):
                 raise ValueError
             self.ref_dict[key] = value
         elif isinstance(key, int):
-            if isinstance(value, int):
-                self.mu.mem_map(key, value)
-            else:
-                self.mu.mem_write(key, value)
+            self.mu.mem_write(key, value)
+
 
 class HookAttr(object):
     def __init__(self, mu, value):
@@ -681,27 +696,7 @@ class HookAttr(object):
         self.value = value
 
     def __call__(self, *args, **kwargs):
-        self.mu.hook_add(self.value, *args, **kwargs)
-
-class HookDecorator(object):
-    def __init__(self, hook_list, value):
-        self.hook_list = hook_list
-        self.value = value
-
-    def __call__(self, *args, **kwargs):
-        if len(args) == 1 and callable(args[0]):
-            self._hookify(args[0])
-            return args[0]
-
-        def wrap(f):
-            return self._hookify(f, *args, **kwargs)
-
-        return wrap
-
-    def _hookify(self, func, *args, **kwargs):
-        args2 = tuple([self.value, func] + list(args))
-        self.hook_list.append((args2, kwargs))
-        return func
+        return self.mu.hook_add(self.value, *args, **kwargs)
 
 
 # print out debugging info

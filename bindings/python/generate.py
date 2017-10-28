@@ -70,11 +70,6 @@ class Hooks_instance(object):
     def __init__(self, mu):
         self.mu = mu {% for hook in hooks %}
         self.{{ hook[0] }} = unicorn.HookAttr(self.mu, unicorn_const.{{ hook[1] }}) {% endfor %}
-
-
-_hook_list = []
-{% for hook in hooks %}
-{{ hook[0] }} = unicorn.HookDecorator(_hook_list, unicorn_const.{{ hook[1] }}) {% endfor %}
 """)
 
 def generate_arch_file(arch_name, arch_const, modes):
@@ -111,4 +106,5 @@ for arch in arches:
     modes = list(itertools.product(*arch[1:]))
     generate_arch_file(arch[0][0], arch[0][1], modes)
 
-generate_hook_file()
+if __name__ == "__main__":
+    generate_hook_file()
